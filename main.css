@@ -1,3 +1,9 @@
+#main-window{
+   
+    
+}
+
+
 .styled_button {
    background-color: #007acc;
    color: white;
@@ -12,11 +18,11 @@
    margin-bottom: 10px;
 }
 
-#history_list {
+.history_list{
    background-color: #1e1e1e;
    color: #eeeeee;
-   padding: 20px;
-   border-radius: 6px;
+   padding: 10px;
+   
 }
 
 row{
@@ -34,6 +40,30 @@ row:selected {
   outline: none; 
   background-color: #303030;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
