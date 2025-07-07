@@ -5,15 +5,27 @@ import signal
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib
 from config import MAX_HISTORY
-from tracker import get_clipboard, ClipboardTracker
 import pyperclip
+import json
 import time
+import socket
+
+HOST = 'localhost'
+PORT = 12345
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+    client.connect((HOST, PORT))
+    client.sendall(b"send array")
+
+    data = client.recv(1024)
+    history_list = json.loads(data.decode())  # parse JSON string back to Python list
+
+    print("Received array:", received_list)
 
 class ClipboardHistoryApp(Gtk.Window):
-    def __init__(self, tracker: ClipboardTracker):
+    def __init__(self,):
         super().__init__(title="Quick Paste")
         self.set_default_size(350, 450)
-        self.tracker = tracker
         
         # Load CSS styling
         css = Gtk.CssProvider()
@@ -57,7 +69,7 @@ class ClipboardHistoryApp(Gtk.Window):
         self.add(vbox)
 
         # Populate history if any
-        for clip in self.tracker.get_history():
+        for clip in history_list:
             self._add_clip_row(clip)
 
         # When window is hidden, free widgets (UI)
@@ -65,6 +77,7 @@ class ClipboardHistoryApp(Gtk.Window):
 
     def _add_clip_row(self, text):
         # Display up to first 100 chars
+        
         label = Gtk.Label(label=text[:100], xalign=0)
         row = Gtk.ListBoxRow()
         row.set_can_focus(True)  
@@ -73,12 +86,12 @@ class ClipboardHistoryApp(Gtk.Window):
         self.listbox.show_all()
         # Limit UI rows to max_history
         children = self.listbox.get_children()
-        if len(children) > self.tracker.max_history:
-            self.listbox.remove(self.listbox.get_row_at_index(self.tracker.max_history))
+        if len(children) > MAX_HISTORY :
+            self.listbox.remove(self.listbox.get_row_at_index(MAX_HISTORY ))
 
     def on_row_activated(self, listbox, row):
         idx = row.get_index()
-        history = self.tracker.get_history()
+        history = history_list
         if idx < len(history):
             text = history[idx]
             p = subprocess.Popen(['xclip', '-selection', 'clipboard'], stdin=subprocess.PIPE)
@@ -101,9 +114,6 @@ class ClipboardHistoryApp(Gtk.Window):
         if self.is_visible():
             self._add_clip_row(text)
         return False  # not a timeout callback
-
-
-
 
 
 
