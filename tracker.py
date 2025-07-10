@@ -6,10 +6,13 @@ from gi.repository import Gtk, Gdk, GLib
 from config import MAX_HISTORY
 import socket
 import json
+import threading
 
 HOST = 'localhost'
-PORT = 12345
+PORT = 3000
 MESSAGE = "Hello World!"
+
+GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, Gtk.main_quit)
 
 def get_clipboard():
     """
@@ -58,29 +61,37 @@ class ClipboardTracker:
 tracker = ClipboardTracker()
 tracker.start()
 
-def print_history():
+def run_server():
+    """
+    Runs a socket server to send clipboard history on request.
+    """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
+        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server.bind((HOST, PORT))
         server.listen()
         print(f"Server listening on {HOST}:{PORT}")
-        conn, addr = server.accept()
 
-        with conn:
-            print(f"Connected by {addr}")
+        while True:
+            try:
+                conn, addr = server.accept()
+                with conn:
+                    print(f"Connected by {addr}")
+                    request = conn.recv(1024).decode()
+                    if request.strip() == "send array":
+                        conn.sendall((json.dumps(tracker.history) + "\n").encode())
 
-            request = conn.recv(1024).decode()
-            if request == "send array":
-                json_data = json.dumps(tracker.history)  # convert list to JSON string
-                conn.sendall(json_data.encode())
-    
-    return True  # keep this callback running repeatedly
+            except Exception as e:
+                print(f"Server error: {e}")
 
-GLib.timeout_add(500, print_history)  # print every 1 second
+# Start server in a background thread
+server_thread = threading.Thread(target=run_server, daemon=True)
+server_thread.start()
+
+# Optional: print history periodically for debug
+def print_history():
+    print(tracker.history)
+    return True
+
+#GLib.timeout_add(500, print_history)  # every 5s
+
 Gtk.main()
-
-
-
-
-
-
-

@@ -7,20 +7,51 @@ from gi.repository import Gtk, Gdk, GLib
 from config import MAX_HISTORY
 import pyperclip
 import json
-import time
 import socket
+import json
+import time
+import threading
 
 HOST = 'localhost'
-PORT = 12345
+PORT = 3000
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-    client.connect((HOST, PORT))
-    client.sendall(b"send array")
+previous_history = None
 
-    data = client.recv(1024)
-    history_list = json.loads(data.decode())  # parse JSON string back to Python list
+history_list = []
+def get_history_list():
+  global previous_history, history_list
+  while True:
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+            client.connect((HOST, PORT))
+            client.sendall(b"send array")
+            buffer = b""
+            while True:
+                chunk = client.recv(1024)
+                if not chunk:
+                    break
+                buffer += chunk
+                if b"\n" in chunk:
+                    break
+            data = buffer.strip()
 
-    print("Received array:", received_list)
+        history_list = json.loads(data.decode())
+
+        if history_list != previous_history:
+            print("Updated history:", history_list)
+            previous_history = history_list
+
+        time.sleep(0.5)
+
+    except KeyboardInterrupt:
+        print("\nStopped by user.")
+        break
+    except Exception as e:
+        print("Client error:", e)
+        time.sleep(2)
+
+history_list_thread = threading.Thread(target = get_history_list)
+history_list_thread.start()
 
 class ClipboardHistoryApp(Gtk.Window):
     def __init__(self,):
@@ -115,5 +146,8 @@ class ClipboardHistoryApp(Gtk.Window):
             self._add_clip_row(text)
         return False  # not a timeout callback
 
+app = ClipboardHistoryApp()
 
+app.show_all()
 
+Gtk.main()
