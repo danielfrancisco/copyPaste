@@ -75,7 +75,6 @@ def run_server():
             try:
                 conn, addr = server.accept()
                 with conn:
-                    print(f"Connected by {addr}")
                     request = conn.recv(1024).decode()
                     if request.strip() == "send array":
                         conn.sendall((json.dumps(tracker.history) + "\n").encode())

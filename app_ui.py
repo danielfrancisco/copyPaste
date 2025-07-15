@@ -18,6 +18,7 @@ PORT = 3000
 previous_history = None
 
 history_list = []
+
 def get_history_list():
   global previous_history, history_list
   while True:
@@ -40,6 +41,7 @@ def get_history_list():
         if history_list != previous_history:
             print("Updated history:", history_list)
             previous_history = history_list
+            GLib.idle_add(app.update_history_gui, history_list)
 
         time.sleep(0.5)
 
@@ -81,9 +83,8 @@ class ClipboardHistoryApp(Gtk.Window):
 
         # Make sure the listbox can receive focus
         self.listbox.set_can_focus(True)
-
-
-        # Create a ScrolledWindow
+       
+       # Create a ScrolledWindow
         scrolled_window = Gtk.ScrolledWindow()
         
         # No horizontal, vertical as needed
@@ -120,6 +121,14 @@ class ClipboardHistoryApp(Gtk.Window):
         if len(children) > MAX_HISTORY :
             self.listbox.remove(self.listbox.get_row_at_index(MAX_HISTORY ))
 
+    # Called from background thread via GLib.idle_add
+    def update_history_gui(self, new_history):
+        # Clear the old UI list
+        self.listbox.foreach(lambda widget: self.listbox.remove(widget))
+        for clip in reversed(new_history[-MAX_HISTORY:]):
+            self._add_clip_row(str(clip))
+        return False  # Return False to indicate one-time callback
+    
     def on_row_activated(self, listbox, row):
         idx = row.get_index()
         history = history_list
