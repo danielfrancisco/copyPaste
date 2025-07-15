@@ -1,5 +1,4 @@
 import gi
-import subprocess
 import signal
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib
@@ -7,28 +6,13 @@ from config import MAX_HISTORY
 import socket
 import json
 import threading
+from get_clipboard import get_clipboard_function
 
 HOST = 'localhost'
 PORT = 3000
 MESSAGE = "Hello World!"
 
 GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, Gtk.main_quit)
-
-def get_clipboard():
-    """
-    Retrieve clipboard text synchronously using xclip.
-    """
-    try:
-        result = subprocess.run(
-            ['xclip', '-selection', 'clipboard', '-o'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            text=True,
-            check=True
-        )
-        return result.stdout
-    except subprocess.CalledProcessError:
-        return None
 
 class ClipboardTracker:
     """
@@ -42,7 +26,7 @@ class ClipboardTracker:
         self.on_new_clip = None
 
     def _poll_clipboard(self):
-        text = get_clipboard()
+        text = get_clipboard_function()
         if text and text != self.last_clip:
             self.last_clip = text
             self.history.insert(0, text)
