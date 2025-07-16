@@ -19,6 +19,8 @@ previous_history = None
 
 history_list = []
 
+history_rows = []
+
 def get_history_list():
   global previous_history, history_list
   while True:
@@ -39,7 +41,6 @@ def get_history_list():
         history_list = json.loads(data.decode())
 
         if history_list != previous_history:
-            print("Updated history:", history_list)
             previous_history = history_list
             GLib.idle_add(app.update_history_gui, history_list)
 
@@ -111,6 +112,7 @@ class ClipboardHistoryApp(Gtk.Window):
         # Display up to first 100 chars
         
         label = Gtk.Label(label=text[:100], xalign=0)
+        history_rows.insert(0,text)
         row = Gtk.ListBoxRow()
         row.set_can_focus(True)  
         row.add(label)
@@ -131,7 +133,9 @@ class ClipboardHistoryApp(Gtk.Window):
     
     def on_row_activated(self, listbox, row):
         idx = row.get_index()
-        history = history_list
+        history = history_rows
+        print(history)
+
         if idx < len(history):
             text = history[idx]
             p = subprocess.Popen(['xclip', '-selection', 'clipboard'], stdin=subprocess.PIPE)
