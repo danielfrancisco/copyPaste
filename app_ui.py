@@ -21,9 +21,11 @@ history_list = []
 
 history_rows = []
 
+run_history_thread = True
+
 def get_history_list():
-  global previous_history, history_list
-  while True:
+  global previous_history, history_list, run_history_thread
+  while run_history_thread:
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
             client.connect((HOST, PORT))
@@ -134,8 +136,7 @@ class ClipboardHistoryApp(Gtk.Window):
     def on_row_activated(self, listbox, row):
         idx = row.get_index()
         history = history_rows
-        print(history)
-
+        
         if idx < len(history):
             text = history[idx]
             p = subprocess.Popen(['xclip', '-selection', 'clipboard'], stdin=subprocess.PIPE)
@@ -150,9 +151,12 @@ class ClipboardHistoryApp(Gtk.Window):
             subprocess.Popen(["xdotool", "key", "--clearmodifiers", "ctrl+shift+v"])
     
     def _on_unmap(self, widget):
-        # destroy UI widgets only
-        self.destroy()
-        # tracker continues polling
+        global run_history_thread
+        run_history_thread = False  # Stop the thread loop
+
+        Gtk.main_quit()  # Stop GTK main loop
+        print("Application exited cleanly.")
+
 
     def on_new_clip(self, text):
         if self.is_visible():
@@ -164,3 +168,4 @@ app = ClipboardHistoryApp()
 app.show_all()
 
 Gtk.main()
+
