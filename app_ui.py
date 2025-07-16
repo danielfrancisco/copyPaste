@@ -7,55 +7,23 @@ from gi.repository import Gtk, Gdk, GLib
 from config import MAX_HISTORY
 import pyperclip
 import json
-import socket
-import json
 import time
 import threading
+from history_list import get_history_list
 
 HOST = 'localhost'
 PORT = 3000
 
-previous_history = None
+prev_history = {'items':None}
 
-history_list = []
+history_list = {'items':[]}
 
 history_rows = []
 
 run_history_thread = True
 
-def get_history_list():
-  global previous_history, history_list, run_history_thread
-  while run_history_thread:
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-            client.connect((HOST, PORT))
-            client.sendall(b"send array")
-            buffer = b""
-            while True:
-                chunk = client.recv(1024)
-                if not chunk:
-                    break
-                buffer += chunk
-                if b"\n" in chunk:
-                    break
-            data = buffer.strip()
+history_list_thread = threading.Thread(target = get_history_list,args=(prev_history, history_list, run_history_thread, HOST, PORT))
 
-        history_list = json.loads(data.decode())
-
-        if history_list != previous_history:
-            previous_history = history_list
-            GLib.idle_add(app.update_history_gui, history_list)
-
-        time.sleep(0.5)
-
-    except KeyboardInterrupt:
-        print("\nStopped by user.")
-        break
-    except Exception as e:
-        print("Client error:", e)
-        time.sleep(2)
-
-history_list_thread = threading.Thread(target = get_history_list)
 history_list_thread.start()
 
 class ClipboardHistoryApp(Gtk.Window):
@@ -104,7 +72,7 @@ class ClipboardHistoryApp(Gtk.Window):
         self.add(vbox)
 
         # Populate history if any
-        for clip in history_list:
+        for clip in history_list['items']   :
             self._add_clip_row(clip)
 
         # When window is hidden, free widgets (UI)
@@ -156,8 +124,7 @@ class ClipboardHistoryApp(Gtk.Window):
 
         Gtk.main_quit()  # Stop GTK main loop
         print("Application exited cleanly.")
-
-
+    
     def on_new_clip(self, text):
         if self.is_visible():
             self._add_clip_row(text)
