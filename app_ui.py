@@ -28,7 +28,7 @@ history_list_thread.start()
 
 class ClipboardHistoryApp(Gtk.Window):
     def __init__(self,):
-        super().__init__(title="Quick Paste")
+        super().__init__(title="copyPaste")
         self.set_default_size(350, 450)
         
         # Load CSS styling
@@ -72,7 +72,7 @@ class ClipboardHistoryApp(Gtk.Window):
         self.add(vbox)
 
         # Populate history if any
-        for clip in history_list['items']   :
+        for clip in history_list['items']:
             self._add_clip_row(clip)
 
         # When window is hidden, free widgets (UI)
