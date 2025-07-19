@@ -82,7 +82,7 @@ class ClipboardHistoryApp(Gtk.Window):
         # Limit UI rows to max_history
         children = self.listbox.get_children()
         if len(children) > MAX_HISTORY :
-            self.listbox.remove(self.listbox.get_row_at_index(MAX_HISTORY ))
+            self.listbox.remove(self.listbox.get_row_at_index(MAX_HISTORY))
     
     def on_row_activated(self, listbox, row):
         idx = row.get_index()
