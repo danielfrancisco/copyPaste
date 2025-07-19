@@ -23,8 +23,13 @@ def get_history_list(prev_history, history_list, run_history_thread, HOST, PORT,
         history_list['items'] = json.loads(data.decode())
 
         if history_list['items'] != prev_history['items']:
+            if(prev_history['items']==None):
+                for clip in history_list['items']:
+                  GLib.idle_add(app._add_clip_row, clip)
+            else:
+                GLib.idle_add(app._add_clip_row, history_list['items'][0])
+
             prev_history['items'] = history_list['items']
-            GLib.idle_add(app._add_clip_row, history_list['items'][0])
             time.sleep(0.5)
 
     except KeyboardInterrupt:

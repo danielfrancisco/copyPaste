@@ -67,10 +67,6 @@ class ClipboardHistoryApp(Gtk.Window):
 
         self.add(vbox)
 
-        # Populate history if any
-        for clip in history_list['items']:
-            self._add_clip_row(clip)
-        
         # When window is hidden, free widgets (UI)
         self.connect("unmap", self._on_unmap)
 
