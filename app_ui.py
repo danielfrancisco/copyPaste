@@ -12,7 +12,7 @@ import threading
 from history_list import get_history_list
 
 HOST = 'localhost'
-PORT = 5677
+PORT = 54321
 
 prev_history = {'items':None}
 

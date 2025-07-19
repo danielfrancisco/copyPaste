@@ -9,7 +9,7 @@ import threading
 from get_clipboard import get_clipboard_function
 
 HOST = 'localhost'
-PORT = 5677
+PORT = 54321
 MESSAGE = "Hello World!"
 
 GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, Gtk.main_quit)
