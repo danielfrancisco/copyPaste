@@ -1,8 +1,9 @@
 import json
 import time
 import socket
+from gi.repository import GLib
 
-def get_history_list(prev_history, history_list, run_history_thread, HOST, PORT):
+def get_history_list(prev_history, history_list, run_history_thread, HOST, PORT, app):
   
   while run_history_thread:
     try:
@@ -23,9 +24,8 @@ def get_history_list(prev_history, history_list, run_history_thread, HOST, PORT)
 
         if history_list['items'] != prev_history['items']:
             prev_history['items'] = history_list['items']
-            GLib.idle_add(app.update_history_gui, history_list)
-
-        time.sleep(0.5)
+            GLib.idle_add(app._add_clip_row, history_list['items'][0])
+            time.sleep(0.5)
 
     except KeyboardInterrupt:
         print("\nStopped by user.")

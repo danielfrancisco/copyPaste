@@ -15,3 +15,4 @@ def get_clipboard_function():
         return result.stdout
     except subprocess.CalledProcessError:
         return None
+

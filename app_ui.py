@@ -12,7 +12,7 @@ import threading
 from history_list import get_history_list
 
 HOST = 'localhost'
-PORT = 3001
+PORT = 3002
 
 prev_history = {'items':None}
 
@@ -21,10 +21,6 @@ history_list = {'items':[]}
 history_rows = []
 
 run_history_thread = True
-
-history_list_thread = threading.Thread(target = get_history_list,args=(prev_history, history_list, run_history_thread, HOST, PORT))
-
-history_list_thread.start()
 
 class ClipboardHistoryApp(Gtk.Window):
     def __init__(self,):
@@ -74,13 +70,12 @@ class ClipboardHistoryApp(Gtk.Window):
         # Populate history if any
         for clip in history_list['items']:
             self._add_clip_row(clip)
-
+        
         # When window is hidden, free widgets (UI)
         self.connect("unmap", self._on_unmap)
 
     def _add_clip_row(self, text):
         # Display up to first 100 chars
-        
         label = Gtk.Label(label=text[:100], xalign=0)
         history_rows.insert(0,text)
         row = Gtk.ListBoxRow()
@@ -92,14 +87,6 @@ class ClipboardHistoryApp(Gtk.Window):
         children = self.listbox.get_children()
         if len(children) > MAX_HISTORY :
             self.listbox.remove(self.listbox.get_row_at_index(MAX_HISTORY ))
-
-    # Called from background thread via GLib.idle_add
-    def update_history_gui(self, new_history):
-        # Clear the old UI list
-        self.listbox.foreach(lambda widget: self.listbox.remove(widget))
-        for clip in reversed(new_history[-MAX_HISTORY:]):
-            self._add_clip_row(str(clip))
-        return False  # Return False to indicate one-time callback
     
     def on_row_activated(self, listbox, row):
         idx = row.get_index()
@@ -131,6 +118,10 @@ class ClipboardHistoryApp(Gtk.Window):
         return False  # not a timeout callback
 
 app = ClipboardHistoryApp()
+
+history_list_thread = threading.Thread(target = get_history_list,args=(prev_history, history_list, run_history_thread, HOST, PORT,app))
+
+history_list_thread.start()
 
 app.show_all()
 
