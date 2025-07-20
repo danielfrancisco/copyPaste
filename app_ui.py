@@ -8,6 +8,7 @@ from config import MAX_HISTORY
 import pyperclip
 import json
 import time
+import os
 import threading
 from history_list import get_history_list, run_event
 
@@ -27,16 +28,20 @@ class ClipboardHistoryApp(Gtk.Window):
         
         # Load CSS styling
         css = Gtk.CssProvider()
+
+        # Get absolute path to main.css, regardless of working directory
+        css_file = os.path.join(os.path.dirname(__file__), "main.css")
+
         try:
-            with open("main.css", "rb") as f:
+            with open(css_file, "rb") as f:
                 css.load_from_data(f.read())
                 Gtk.StyleContext.add_provider_for_screen(
-                Gdk.Screen.get_default(),
-                css,
-                Gtk.STYLE_PROVIDER_PRIORITY_USER
-            )
-        except FileNotFoundError:
-            pass
+                    Gdk.Screen.get_default(),
+                    css,
+                    Gtk.STYLE_PROVIDER_PRIORITY_USER
+                )
+        except Exception as e:
+         print(f"Failed to load CSS: {e}")
 
         # Layout
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
