@@ -103,8 +103,7 @@ class ClipboardHistoryApp(Gtk.Window):
     
     def _on_unmap(self, widget):
         global run_history_thread
-        run_history_thread = False  # Stop the thread loop
-
+        run_event.clear()  # Signal thread to stop
         Gtk.main_quit()  # Stop GTK main loop
         print("Application exited cleanly.")
     

@@ -1,11 +1,15 @@
 import json
 import time
 import socket
+import threading
 from gi.repository import GLib
+
+run_event = threading.Event()
+run_event.set()  # Signal the thread to run
 
 def get_history_list(prev_history, history_list, run_history_thread, HOST, PORT, app):
   
-  while run_history_thread:
+   while run_event.is_set():
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
             client.connect((HOST, PORT))
