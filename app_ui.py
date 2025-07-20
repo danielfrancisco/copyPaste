@@ -9,7 +9,7 @@ import pyperclip
 import json
 import time
 import threading
-from history_list import get_history_list
+from history_list import get_history_list, run_event
 
 HOST = 'localhost'
 PORT = 54321
@@ -19,8 +19,6 @@ prev_history = {'items':None}
 history_list = {'items':[]}
 
 history_rows = []
-
-run_history_thread = True
 
 class ClipboardHistoryApp(Gtk.Window):
     def __init__(self,):
@@ -102,7 +100,6 @@ class ClipboardHistoryApp(Gtk.Window):
             subprocess.Popen(["xdotool", "key", "--clearmodifiers", "ctrl+shift+v"])
     
     def _on_unmap(self, widget):
-        global run_history_thread
         run_event.clear()  # Signal thread to stop
         Gtk.main_quit()  # Stop GTK main loop
         print("Application exited cleanly.")
@@ -114,7 +111,7 @@ class ClipboardHistoryApp(Gtk.Window):
 
 app = ClipboardHistoryApp()
 
-history_list_thread = threading.Thread(target = get_history_list,args=(prev_history, history_list, run_history_thread, HOST, PORT,app))
+history_list_thread = threading.Thread(target = get_history_list,args=(prev_history, history_list, HOST, PORT,app))
 
 history_list_thread.start()
 

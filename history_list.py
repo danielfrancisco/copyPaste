@@ -7,8 +7,7 @@ from gi.repository import GLib
 run_event = threading.Event()
 run_event.set()  # Signal the thread to run
 
-def get_history_list(prev_history, history_list, run_history_thread, HOST, PORT, app):
-  
+def get_history_list(prev_history, history_list, HOST, PORT, app):
    while run_event.is_set():
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
