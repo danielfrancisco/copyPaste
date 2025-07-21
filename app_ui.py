@@ -24,7 +24,7 @@ history_rows = []
 class ClipboardHistoryApp(Gtk.Window):
     def __init__(self,):
         super().__init__(title="copyPaste")
-        self.set_default_size(350, 450)
+        self.set_default_size(300, 450)
         
         # Load CSS styling
         css = Gtk.CssProvider()
