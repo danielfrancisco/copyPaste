@@ -7,6 +7,7 @@ import socket
 import json
 import threading
 from get_clipboard import get_clipboard_function
+import sys   
 
 HOST = 'localhost'
 PORT = 54321
@@ -45,14 +46,9 @@ class ClipboardTracker:
 tracker = ClipboardTracker()
 tracker.start()
 
-def run_server():
-    """
-    Runs a socket server to send clipboard history on request.
-    """
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-        server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server.bind((HOST, PORT))
-        server.listen()
+def run_server(server):
+    with server:
+        server.listen(10)
         print(f"Server listening on {HOST}:{PORT}")
 
         while True:
@@ -62,13 +58,20 @@ def run_server():
                     request = conn.recv(1024).decode()
                     if request.strip() == "send array":
                         conn.sendall((json.dumps(tracker.history) + "\n").encode())
-
             except Exception as e:
                 print(f"Server error: {e}")
 
-# Start server in a background thread
-server_thread = threading.Thread(target=run_server, daemon=True)
-server_thread.start()
+# Attempt to bind — fail early if already in use
+try:
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind((HOST, PORT))
+except OSError as e:
+    print(f"Failed to bind to {HOST}:{PORT} — already in use?")
+    sys.exit(1)
+
+# Start server in background
+threading.Thread(target=run_server, args=(server_socket,), daemon=True).start()
 
 # Optional: print history periodically for debug
 def print_history():
